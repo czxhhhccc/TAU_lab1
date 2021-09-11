@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import colorama as color
+import control
 
 def choice2():
     print(color.Style.RESET_ALL)
@@ -79,18 +80,31 @@ def getUnit(name):
             pass
         pass
     return unit
-def graph(num, title,y,x):
-    plt.subplot(2,1,num)
+def graph1(num, title,y,x):
+    plt.subplot(4,1,num)
     plt.grid(True)
     if title=='переходная характеристика':
         plt.plot(x,y,'purple')
+        plt.ylabel('амплитуда')
+        plt.xlabel("Время c")
         pass
     elif title=='импульная характеристика':
         plt.plot(x,y,'green')
+        plt.ylabel('амплитуда')
+        plt.xlabel("Время c")
+        pass
+    elif title=='АЧХ':
+        plt.plot(x,y,'purple')
+        plt.ylabel('амплитуда')
+        plt.xlabel('Частота, rad/s')
+        pass
+    elif title=='ФЧХ':
+        plt.plot(x,y,'green')
+        plt.ylabel('Фаза')
+        plt.xlabel("Частота, rad/s")
         pass
     plt.title(title)
-    plt.ylabel('амплитуда')
-    plt.xlabel("Время c")
+    pass
 unitName = choice2()
 unit = getUnit(unitName)
 print(unit)
@@ -98,11 +112,27 @@ timeLine = []
 for i in range(1,10000):
     timeLine.append(i/1000)
     pass
-[y,x]=matlab.step(unit,timeLine)
-graph(1,'переходная характеристика',y,x)
-[y,x]=matlab.impulse(unit,timeLine)
-graph(2,'импульная характеристика',y,x)
-
+if unitName=='Идеальное дифференцирующее звено':
+    print('При идуальном дифференцирующем звене переходная характеристика представляет сщбой переходная функциф')
+    pass
+else:
+    [y,x]=matlab.step(unit,timeLine)
+    graph1(1,'переходная характеристика',y,x)
+    [y,x]=matlab.impulse(unit,timeLine)
+    graph1(2,'импульная характеристика',y,x)
+    pass
+mag, phase, omega=control.bode(unit, plot=False)
+graph1(3,'АЧХ',mag,omega)
+phase1=[]
+if unitName=='Реальное дифференцирующее звено':
+    for i in phase:
+        phase1.append(i+2 * np.pi)
+        pass
+    graph1(4, 'ФЧХ', phase1, omega)
+    pass
+else:
+    graph1(4, 'ФЧХ', phase, omega)
+    pass
 plt.show()
 
 
