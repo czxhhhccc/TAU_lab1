@@ -68,7 +68,7 @@ def getUnit(name):
     elif name == 'Реальное дифференцирующее звено':
         unit = matlab.tf([k,0],[T,1])
         pass
-    return unit
+    return unit,k,T
 def graph1(num, title,y,x):
     plt.subplot(2,2,num)
     plt.grid(True)
@@ -95,7 +95,7 @@ def graph1(num, title,y,x):
     plt.title(title)
     pass
 unitName = choice2()
-unit = getUnit(unitName)
+unit,k,T = getUnit(unitName)
 print(unit)
 timeLine = []
 for i in range(1,10000):
@@ -110,21 +110,43 @@ else:
     [y,x]=matlab.impulse(unit,timeLine)
     graph1(2,'импульная характеристика',y,x)
     pass
-mag, phase, omega=control.bode(unit, plot=False)
-graph1(3,'АЧХ',mag,omega)
-phase1=[]
-if unitName=='Реальное дифференцирующее звено' or unitName=='Идеальное дифференцирующее звено':
-    for i in phase:
-        phase1.append(i+2 * np.pi)
+omegaLine = []
+for i in range(1,10000):
+    omegaLine.append(i/1000)
+    pass
+A = []
+Phase1 = []
+if unitName=='Безынерционное звено':
+    for i in omegaLine:
+        A.append(k)
+        Phase1.append(0)
         pass
-    graph1(4, 'ФЧХ', phase1, omega)
     pass
-else:
-    graph1(4, 'ФЧХ', phase, omega)
+elif unitName=='Апериодическое звено':
+    for i in omegaLine:
+        A.append(1/(1+(T**2)*i**2)**0.5)
+        Phase1.append(math.atan(-2*i))
+        pass
     pass
+elif unitName=='Интегрирующее звено':
+    for i in omegaLine:
+        A.append(k/i)
+        Phase1.append(-np.pi/2)
+        pass
+    pass
+elif unitName=='Идеальное дифференцирующее звено':
+    for i in omegaLine:
+        A.append(i)
+        Phase1.append(np.pi/2)
+        pass
+    pass
+elif unitName=='Реальное дифференцирующее звено':
+    for i in omegaLine:
+        A.append((2*i)/(1+(T**2)*i**2)**0.5)
+        Phase1.append(math.atan(1/(T*i)))
+        pass
+    pass
+graph1(3,'АЧХ',A,omegaLine)
+phase1=[]
+graph1(4, 'ФЧХ', Phase1, omegaLine)
 plt.show()
-
-
-
-
-
