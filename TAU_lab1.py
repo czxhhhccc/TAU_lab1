@@ -4,13 +4,14 @@ import matplotlib.pyplot as plt
 import math
 import colorama as color
 
-def chioce():
+def choice2():
     print(color.Style.RESET_ALL)
     inertialessUnitName = 'Безынерционное звено'
     aperiodicUnitName= 'Апериодическое звено'
     integratingUnitName = 'Интегрирующее звено'
     idealdifferentialUnitName = 'Идеальное дифференцирующее звено'
     realdifferentialUnitName = 'Реальное дифференцирующее звено'
+
     needNewChoice = True
     while needNewChoice:
         print(color.Style.RESET_ALL)
@@ -67,7 +68,7 @@ def getUnit(name):
                 unit = matlab.tf([k],[1,0])
                 pass
             elif name == 'Идеальное дифференцирующее звено':
-                unit = matlab.tf([k,0],[1])
+                unit = matlab.tf([k,0],[T,1])
                 pass
             elif name == 'Реальное дифференцирующее звено':
                 unit = matlab.tf([k,0],[T,1])
@@ -90,8 +91,9 @@ def graph(num, title,y,x):
     plt.title(title)
     plt.ylabel('амплитуда')
     plt.xlabel("Время c")
-unitName = chioce()
+unitName = choice2()
 unit = getUnit(unitName)
+print(unit)
 timeLine = []
 for i in range(1,10000):
     timeLine.append(i/1000)
@@ -100,5 +102,10 @@ for i in range(1,10000):
 graph(1,'переходная характеристика',y,x)
 [y,x]=matlab.impulse(unit,timeLine)
 graph(2,'импульная характеристика',y,x)
+
 plt.show()
+
+
+
+
 
