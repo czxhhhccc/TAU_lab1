@@ -5,7 +5,12 @@ import math
 import colorama as color
 import control
 
+
 def choice2():
+    '''
+    выбрается рассматриваемое типовое звено и возвращается имя выбранного типового звена
+    :return:
+    '''
     print(color.Style.RESET_ALL)
     inertialessUnitName = 'Безынерционное звено'
     aperiodicUnitName= 'Апериодическое звено'
@@ -50,7 +55,13 @@ def choice2():
             pass
     return name
     pass
+
 def getUnit(name):
+    '''
+    получаются соответствующая передаточная функция, коэ. усиления и постоянная времени
+    :param name:
+    :return:
+    '''
     k = float(input('пожалуйста, введите коэф. "k"'))
     T = float(input('пожалуйста, введите коэф. "T"'))
     if name == 'Безынерционное звено':
@@ -70,6 +81,14 @@ def getUnit(name):
         pass
     return unit
 def graph1(num, title,y,x):
+    '''
+    выполняются графики переходной характеристики, импульсной характеричтики, АЧХ и ФЧХ
+    :param num: положение графика
+    :param title: название шрафиков
+    :param y: Ординатное значение оси y
+    :param x: Ординатное значение оси x
+    :return:
+    '''
     plt.subplot(2,2,num)
     plt.grid(True)
     if title=='переходная характеристика':
@@ -94,13 +113,20 @@ def graph1(num, title,y,x):
         pass
     plt.title(title)
     pass
+
 unitName = choice2()
 unit = getUnit(unitName)
+
+# напечатать передаточную функцию
 print(unit)
+
+# формируется список времени [0.1,10]
 timeLine = []
 for i in range(1,10000):
     timeLine.append(i/1000)
     pass
+
+# для идеального диф. звена его переходную характеристику и импульнаую характеристику не могу выполнить
 if unitName=='Идеальное дифференцирующее звено':
     print('При идуальном дифференцирующем звене переходная характеристика представляет сщбой переходная функциф')
     pass
@@ -110,9 +136,14 @@ else:
     [y,x]=matlab.impulse(unit,timeLine)
     graph1(2,'импульная характеристика',y,x)
     pass
+
+# использую control.bode, чтобы получать амплитуда, фаза и омега определенного звена
 mag, phase, omega=control.bode(unit, plot=False)
+# АЧХ для определенного звена
 graph1(3,'АЧХ',mag,omega)
 phase1=[]
+
+# выполнение эквивалентного перехода, чтобы ФЧХ из метода "bode" была одинакова с ФЧХ из прямого расчета
 if unitName=='Реальное дифференцирующее звено' or unitName=='Идеальное дифференцирующее звено':
     for i in phase:
         phase1.append(i+2 * np.pi)
@@ -122,9 +153,6 @@ if unitName=='Реальное дифференцирующее звено' or u
 else:
     graph1(4, 'ФЧХ', phase, omega)
     pass
+
+# отображаются все окна графиков
 plt.show()
-
-
-
-
-

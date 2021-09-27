@@ -3,9 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import colorama as color
-import control
+
 
 def choice2():
+    '''
+    выбрается рассматриваемое типовое звено и возвращается имя выбранного типового звена
+    :return:
+    '''
     print(color.Style.RESET_ALL)
     inertialessUnitName = 'Безынерционное звено'
     aperiodicUnitName= 'Апериодическое звено'
@@ -14,6 +18,7 @@ def choice2():
     realdifferentialUnitName = 'Реальное дифференцирующее звено'
 
     needNewChoice = True
+
     while needNewChoice:
         print(color.Style.RESET_ALL)
         userInput=input('Введите номер команды: \n'
@@ -22,6 +27,7 @@ def choice2():
                         '3-'+integratingUnitName+';\n'
                         '4-'+idealdifferentialUnitName+';\n'
                         '5-'+realdifferentialUnitName+'.\n')
+
         if userInput.isdigit():
             needNewChoice = False
             userInput=int(userInput)
@@ -50,7 +56,13 @@ def choice2():
             pass
     return name
     pass
+
 def getUnit(name):
+    '''
+    получаются соответствующая передаточная функция, коэ. усиления и постоянная времени
+    :param name:
+    :return:
+    '''
     k = float(input('пожалуйста, введите коэф. "k"'))
     T = float(input('пожалуйста, введите коэф. "T"'))
     if name == 'Безынерционное звено':
@@ -69,7 +81,16 @@ def getUnit(name):
         unit = matlab.tf([k,0],[T,1])
         pass
     return unit,k,T
+
 def graph1(num, title,y,x):
+    '''
+    выполняются графики переходной характеристики, импульсной характеричтики, АЧХ и ФЧХ
+    :param num: положение графика
+    :param title: название шрафиков
+    :param y: Ординатное значение оси y
+    :param x: Ординатное значение оси x
+    :return:
+    '''
     plt.subplot(2,2,num)
     plt.grid(True)
     if title=='переходная характеристика':
@@ -94,15 +115,22 @@ def graph1(num, title,y,x):
         pass
     plt.title(title)
     pass
+
 unitName = choice2()
 unit,k,T = getUnit(unitName)
+
+# напечатать передаточную функцию
 print(unit)
+
+# формируется список времени [0.1,10]
 timeLine = []
 for i in range(1,10000):
     timeLine.append(i/1000)
     pass
+
+# для идеального диф. звена его переходную характеристику и импульнаую характеристику не могу выполнить
 if unitName=='Идеальное дифференцирующее звено':
-    print('При идуальном дифференцирующем звене переходная характеристика представляет сщбой переходная функциф')
+    print(color.Fore.RED+'\nПри идуальном дифференцирующем звене переходная характеристика представляет сщбой переходная функция')
     pass
 else:
     [y,x]=matlab.step(unit,timeLine)
@@ -110,12 +138,16 @@ else:
     [y,x]=matlab.impulse(unit,timeLine)
     graph1(2,'импульная характеристика',y,x)
     pass
+
+# формируется список Омега [0.1,10]
 omegaLine = []
 for i in range(1,10000):
     omegaLine.append(i/1000)
     pass
+
 A = []
 Phase1 = []
+# расчеты амплитуды и фаз для определенного звена
 if unitName=='Безынерционное звено':
     for i in omegaLine:
         A.append(k)
@@ -146,7 +178,10 @@ elif unitName=='Реальное дифференцирующее звено':
         Phase1.append(math.atan(1/(T*i)))
         pass
     pass
+
+# через функция graph1 выполнять АЧХ и ФЧХ
 graph1(3,'АЧХ',A,omegaLine)
-phase1=[]
 graph1(4, 'ФЧХ', Phase1, omegaLine)
+
+# отображаются все окна графиков
 plt.show()
