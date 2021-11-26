@@ -429,6 +429,14 @@ def solve_w_180(n,omega_limits = [0.001,10000]):
         print(f'запас по модулю равен {margin_mag1}')
         return w_180_1, mag_180_1
 def plot1(w_180, mag_180,n,omega_limits = [0.001,10000]):
+    '''
+    Определить положение соответствующих точек в Л АЧХ и ФЧХ при φ(w) = -(2k+1)*180
+    :param w_180:
+    :param mag_180:
+    :param n:
+    :param omega_limits:
+    :return:
+    '''
     if w_180 == 'None' and mag_180 == 'None':
         print(color.Fore.LIGHTRED_EX+'Для этой системы запаса по модулю не существует')
         return
@@ -449,6 +457,13 @@ def plot1(w_180, mag_180,n,omega_limits = [0.001,10000]):
     plt.grid()
     plt.show()
 def plot2(w_c, phase_0,omega_limits = [0.001,10000]):
+    '''
+    Определить положение соответствующих точек в Л АЧХ и ФЧХ при частоте среза
+    :param w_c:
+    :param phase_0:
+    :param omega_limits:
+    :return:
+    '''
     # 将目标点定位出来
     control.bode(W_OpenLoop, dB=True, plot=True, omega_limits=omega_limits)
     ax1, ax2 = plt.gcf().axes  # get subplot axes
@@ -475,9 +490,13 @@ plot1(w_180, mag_180,n)
 w_c, phase_0 = solve_w_c(n)
 plot2(w_c, phase_0)
 
-# Построить годограф Михайлова. Сделать вывод об устойчивости САУ по критерию Михайлова.
 CoefChara = W_ClosedLoop.den[0][0]  #取出第一行 第一列的一维数组
 def Mikhailov(CoefChara):
+    '''
+    Построить годограф Михайлова. Сделать вывод об устойчивости САУ по критерию Михайлова.
+    :param CoefChara:
+    :return:
+    '''
     # 构造闭环特征方程
     # 使用符号系统
     p = symbols('p')
@@ -514,8 +533,7 @@ def Mikhailov(CoefChara):
 Mikhailov(CoefChara)
 
 # критерий Рауса- Гурвица
-a = W_ClosedLoop.den[0][0]
-def Raus_Hurwitz(a):
+def Raus_Hurwitz():
     print(color.Style.RESET_ALL)
     a = W_ClosedLoop.den[0][0]
     num_delta = list(range(len(a)))
@@ -575,4 +593,34 @@ def Raus_Hurwitz(a):
     else:
         print('Эта система не устойчива')
     pass
-Raus_Hurwitz(a)
+Raus_Hurwitz()
+
+def k_critical():
+    '''
+    решить предельное значение коэффициента усиления обратеной свя
+    :return:
+    '''
+    k = symbols('k',real = True)
+    p = symbols('p')
+    W1_s = (poly(k*p)).as_expr()   # 不加 as_expr() 会报错
+    W2_s = 1/poly(7*p+1)
+    W3_s = poly(0.02*p+1)/poly(0.35*p+1)
+    W4_s = 24/poly(5*p+1)
+    W_ForwardGain_s = simplify(W2_s*W3_s*W4_s)
+    W_Closedloop = simplify(W_ForwardGain_s/(1+W_ForwardGain_s*W1_s))
+    Characteristic_equation = collect(expand(fraction(W_Closedloop)[1]),p)   #  fraction() 提取表达式分子和分母  返回元组
+                                                                            # collect() 选取 一个主元进行合并同类项
+    Characteristic_equation = Poly(Characteristic_equation,p)   # Poly 是什么作用  为什么有coeffs
+    c = Characteristic_equation.coeffs()   # коэффициенты характеристического уравнения
+    # print(coeffs_)
+    delta3 = Matrix([[c[1],c[3],0],[c[0],c[2],0],[0,c[1],c[3]]])
+    delta2 = Matrix([[c[1], c[3]], [c[0], c[2]]])
+    delta1 = Matrix([[c[1]]])
+    print('delta3:', type((delta3.det())))
+    print('delta2:', delta2.det())
+    print('delta1:', delta1.det())
+    k_range = solve([delta3.det()>=0,delta2.det()>=0,delta1.det()>=0],k)
+    print('Диапазон значения k, соответствующие устойчивой системе, составляет',k_range)
+    print(type(k_range))
+    print(W_Closedloop)
+k_critical()
